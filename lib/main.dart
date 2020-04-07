@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import './widgets/new_transaction.dart';
 import './widgets/transaction_list.dart';
+import 'widgets/chart.dart';
 import './models/transaction.dart';
 
 
@@ -17,8 +18,24 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.purple,
         accentColor: Colors.amber,
-        fontFamily: 'OpenSans',
-      ),
+        fontFamily: 'QuickSand',
+        textTheme: ThemeData.light().textTheme.copyWith(
+          title: TextStyle(
+            fontFamily: 'OpenSans', 
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            ),
+            button: TextStyle(color: Colors.white),
+        ),
+        appBarTheme: AppBarTheme(
+          textTheme: ThemeData.light().textTheme.copyWith(
+           title: TextStyle(
+             fontFamily: 'OpenSans',
+             fontSize: 20,
+             fontWeight: FontWeight.bold,
+            ),
+         ),
+      )),
       home: MyHomePage(),
     );
   }
@@ -35,27 +52,35 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
  final List<Transaction> _userTransactions = [
-    Transaction(
-      id: 't1', 
-      title: 'New Shoes', 
-      amount: 69.72, 
-      date: DateTime.now(),
-      ),
-    Transaction(
-      id: 't2', 
-      title: 'Weekly Groceries', 
-      amount: 16.22, 
-      date: DateTime.now(),
-      ),  
+    // Transaction(
+    //   id: 't1', 
+    //   title: 'New Shoes', 
+    //   amount: 69.72, 
+    //   date: DateTime.now(),
+    //   ),
+    // Transaction(
+    //   id: 't2', 
+    //   title: 'Weekly Groceries', 
+    //   amount: 16.22, 
+    //   date: DateTime.now(),
+    //   ),  
   ];
+
+  List<Transaction> get _recentTransactions {
+    return _userTransactions.where((tx) {
+      return tx.date.isAfter(DateTime.now().subtract(
+        Duration(days: 7),
+      ));
+    }).toList();
+  }
 
   //建構新的transaction
 
-  void _addNewTransaction(String txTitle, double txAmount) {
+  void _addNewTransaction(String txTitle, double txAmount, DateTime chosenDate) {
     final newTx = Transaction(
       title: txTitle, 
       amount: txAmount, 
-      date: DateTime.now(), 
+      date: chosenDate, 
       id: DateTime.now().toString()
       );
 
@@ -76,6 +101,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _deleteTransaction(String id) {//目前以id作為刪除判斷依據（上面的日期）
+    setState(() {
+      _userTransactions.removeWhere((tx) => tx.id == id);//選取的id  與 資料id相符, 刪除
+      });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,17 +121,10 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SingleChildScrollView(
               child: Column(
             //mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-            Container(
-              width: double.infinity,
-              child: Card(
-                color: Colors.blue,
-                child: Text('CHART!'),
-                elevation: 5,
-              ),
-           ),
-            TransactionList(_userTransactions),
+              Chart(_recentTransactions),
+              TransactionList(_userTransactions, _deleteTransaction), 
           ],
         ),
       ),  
