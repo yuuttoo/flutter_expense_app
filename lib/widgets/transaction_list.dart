@@ -12,9 +12,11 @@ class TransactionList extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Container(
-      height:450,//加入無資料時的條件
+      height: MediaQuery.of(context).size.height * 0.6,
+      //加入無資料時的條件
       child: transactions.isEmpty
-        ?Column(
+        ? LayoutBuilder(builder: (ctx, constraints) {
+          return  Column(
           children: <Widget>[
             Text(
               'No transacitons added yet!',
@@ -24,13 +26,15 @@ class TransactionList extends StatelessWidget{
               height: 20,
               ),
             Container(
-              height: 200,
+              height: constraints.maxHeight * 0.6,
               child: Image.asset(
                 'assets/images/waiting.png', 
                 fit: BoxFit.cover,
                 )),
               ],
-            )
+            );
+        })
+
           : ListView.builder(
             itemBuilder: (ctx, index) {
               return Card(
@@ -56,7 +60,14 @@ class TransactionList extends StatelessWidget{
                   subtitle: Text(
                     DateFormat.yMMMd().format(transactions[index].date),
                     ),
-                    trailing: IconButton(
+                    trailing: MediaQuery.of(context).size.width > 460 
+                      ? FlatButton.icon(
+                        icon: Icon(Icons.delete),
+                        label: Text('Delete'),
+                        textColor: Theme.of(context).errorColor,
+                        onPressed: () => deleteTx(transactions[index].id),
+                        )
+                        : IconButton(
                       icon: Icon(Icons.delete), 
                       color: Theme.of(context).errorColor,//預設為紅色 也可以自己回main設定
                       onPressed: () => deleteTx(transactions[index].id),
